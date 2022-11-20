@@ -39,17 +39,17 @@ bot process =
           simplifySessionBot printCalcOutput statementP $
             sessionize mempty $
               calculatorBot
-      helloBot = helloMatrixBot
       coinFlipBot' = liftSimpleBot $ simplifyCoinFlipBot coinFlipBot
       ghciBot' = liftSimpleBot $ ghciBot process
       magic8BallBot' = liftSimpleBot $ simplifyMagic8BallBot magic8BallBot
    in calcBot
         /.\ coinFlipBot'
-        /.\ helloBot
+        /.\ helloMatrixBot
         /.\ ghciBot'
         /.\ magic8BallBot'
         /.\ updogMatrixBot
         /.\ liftSimpleBot jitsiBot
+        /.\ liftSimpleBot listBot
 
 cliMain :: FilePath -> IO ()
 cliMain xdgCache = withProcessWait_ ghciConfig $ \process -> do
