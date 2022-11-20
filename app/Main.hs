@@ -49,7 +49,7 @@ bot process =
         /.\ magic8BallBot'
         /.\ updogMatrixBot
         /.\ liftSimpleBot jitsiBot
-        /.\ liftSimpleBot listBot
+        /.\ liftSimpleBot listsBot
 
 cliMain :: FilePath -> IO ()
 cliMain xdgCache = withProcessWait_ ghciConfig $ \process -> do
