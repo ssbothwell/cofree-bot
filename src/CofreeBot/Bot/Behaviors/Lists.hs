@@ -51,7 +51,15 @@ listsBot' = Bot $ \s -> \case
     t' <- fmap snd $ runBot listItemBot t action
     pure ("List Updated", Map.insert name t' s)
   DeleteList name -> pure ("List deleted", Map.delete name s)
-  ShowList name -> pure (T.pack $ show $ Map.lookup name s, s)
+  ShowList name -> pure (prettyListM name $ Map.lookup name s, s)
+
+prettyList :: T.Text -> IntMap T.Text -> T.Text
+prettyList name list = name <> ":\n" <> foldr (\(i, x) acc -> T.pack (show i) <> ". " <> x <> "\n" <> acc) mempty (IntMap.toList list)
+
+prettyListM :: T.Text -> Maybe (IntMap T.Text) -> T.Text
+prettyListM name = \case
+  Nothing -> "List '" <> name <> "' not found."
+  Just l -> prettyList name l
 
 listsBot :: Monad m => Bot m (Map T.Text (IntMap T.Text)) T.Text T.Text
 listsBot = dimap (parseOnly parseListAction) indistinct $ emptyBot \/ listsBot'
