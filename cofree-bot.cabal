@@ -81,6 +81,7 @@ library
     CofreeBot.Bot.Behaviors.Hello
     CofreeBot.Bot.Behaviors.Jitsi
     CofreeBot.Bot.Behaviors.Jitsi.Dictionary
+    CofreeBot.Bot.Behaviors.Lists
     CofreeBot.Bot.Behaviors.Magic8Ball
     CofreeBot.Bot.Behaviors.Updog
     CofreeBot.Bot.Context

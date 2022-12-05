@@ -55,9 +55,6 @@ import CofreeBot.Utils
 import CofreeBot.Utils.ListT
 import Control.Arrow qualified as Arrow
 import Control.Exception
-  ( catch,
-    throwIO,
-  )
 import Control.Lens
   ( ifolded,
     view,
@@ -82,9 +79,9 @@ import Data.These
 import Network.Matrix.Client
 import Network.Matrix.Client.Lens
 import System.Directory (createDirectoryIfMissing)
+import System.Directory.Internal.Prelude (isDoesNotExistError)
 import System.FilePath
 import System.IO
-import System.IO.Error (isDoesNotExistError)
 import System.Random
 
 --------------------------------------------------------------------------------
