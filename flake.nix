@@ -1,5 +1,4 @@
 {
-
   description = "Cofree.Coffee Matrix Bot";
 
   inputs = {
@@ -11,34 +10,28 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, ... }:
     let
-      ghcVersion = "924";
-      compiler = "ghc${ghcVersion}";
-      # default systems compatible with pre-commit-hooks.nix
-      # https://github.com/cachix/pre-commit-hooks.nix/pull/122
-      defaultSystems = [
-        "aarch64-linux"
-        # "aarch64-darwin"
-        "i686-linux"
-        "x86_64-darwin"
-        "x86_64-linux"
-      ];
+      compiler = "ghc924";
+      overrides = hfinal: hprev: {
+        cofree-bot = hfinal.callCabal2nix "cofree-bot" ./. { };
+      };
     in
-    flake-utils.lib.eachSystem defaultSystems (system:
-      let
-        pkgs = import nixpkgs { inherit system; };
-
-        # need to do the evalPkgs trick so that IFD works with `nix flake check`
-        # https://github.com/NixOS/nix/issues/4265
-        evalPkgs = import nixpkgs { system = "x86_64-linux"; };
-
-        # Our haskell packages override, needs to use evalPkgs because
-        # cabal2nix uses IFD
-        hsPkgs = evalPkgs.haskell.packages.${compiler}.override {
-          overrides = hfinal: hprev: {
-            cofree-bot = hfinal.callCabal2nix "cofree-bot" ./. { };
+    {
+      overlays.default = final: prev: {
+        haskell = prev.haskell // {
+          packages = prev.haskell.packages // {
+            ghc8107 = prev.haskell.packages.ghc8107.override { inherit overrides; };
+            ghc904 = prev.haskell.packages.ghc904.override { inherit overrides; };
+            ghc924 = prev.haskell.packages.ghc924.override { inherit overrides; };
           };
+        };
+      };
+    } // flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ self.overlays.default ];
         };
 
         scripts = import ./nix/scripts.nix {
@@ -46,30 +39,32 @@
           ormolu = pkgs.ormolu;
         };
       in
-      rec {
-
-        # Note: cannot reference anything that depends on `evalPkgs` like `hsPkgs`
-        # otherwise non-x86_64-linux users will not be able to build the dev env
-        devShell = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            cabal2nix
-            cabal-install
-            ghcid
-            haskell.compiler.${compiler}
-            haskell.packages.${compiler}.haskell-language-server
-            ormolu
-            zlib
-          ] ++ (builtins.attrValues scripts);
+      {
+        devShells = flake-utils.lib.flattenTree {
+          default = pkgs.mkShell {
+            buildInputs = with pkgs; [
+              # haskell development tools.
+              cabal-install
+              ghcid
+              ormolu
+              nixpkgs-fmt
+              (haskell.packages.${compiler}.ghcWithPackages (hpkgs: with hpkgs; [
+                haskell-language-server
+              ]))
+              # system-level dependencies.
+              zlib.dev
+            ] ++ (builtins.attrValues scripts);
+          };
         };
 
         packages = flake-utils.lib.flattenTree {
           docker = import ./nix/docker.nix {
             inherit pkgs;
-            cofree-bot = hsPkgs.cofree-bot;
+            cofree-bot = pkgs.haskell.packages.${compiler}.cofree-bot;
           };
-          cofree-bot = hsPkgs.cofree-bot;
+          cofree-bot = pkgs.haskell.packages.${compiler}.cofree-bot;
         };
 
-        defaultPackage = packages.cofree-bot;
+        defaultPackage = self.packages.cofree-bot;
       });
 }
