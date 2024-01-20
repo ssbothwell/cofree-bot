@@ -7,3 +7,8 @@ source-repository-package
   location: https://github.com/softwarefactory-project/matrix-client-haskell.git
   tag: 0.1.4.2
   subdir: matrix-client
+
+source-repository-package
+  type: git
+  location: https://github.com/solomon-b/monoidal-functors.git
+  tag: a9770c92902a75974e52d036381437d6f9631c19

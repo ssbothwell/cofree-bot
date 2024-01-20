@@ -23,6 +23,7 @@ module Data.Chat.Utils
     distinguish,
     PointedChoice (..),
     readFileMaybe,
+    (...),
   )
 where
 
@@ -113,3 +114,11 @@ readFileMaybe :: String -> IO (Maybe Text)
 readFileMaybe path =
   fmap Just (Text.IO.readFile path)
     `catch` \e -> if isDoesNotExistError e then pure Nothing else throwIO e
+
+--------------------------------------------------------------------------------
+
+infixr 8 ...
+
+-- | The infamous blackbird operator
+(...) :: (c -> d) -> (a -> b -> c) -> a -> b -> d
+(...) = (.) . (.)
